@@ -6,6 +6,8 @@ bot = telebot.TeleBot(config.token)
 
 chats = {}
 
+
+
 @bot.message_handler(func=lambda message: message.text == '/newpoll')
 def repeat_2(message):
 	print(chats)
@@ -14,12 +16,18 @@ def repeat_2(message):
 		'wanna poll ,beach? Enter the title of your poll:')
 	
 
+
+
+
 def generate_markup(answers):
 	markup = telebot.types.InlineKeyboardMarkup()
 	for ans in answers:
 		callback_button = telebot.types.InlineKeyboardButton(text=ans, callback_data=ans)
 		markup.add(callback_button)
 	return markup	
+
+
+
 
 @bot.message_handler(content_types=['text'])
 def repeat_1(message):
@@ -36,17 +44,16 @@ def repeat_1(message):
 		if message.text == '/done':
 			chats[message.chat.id][0] =  config.states.S_REGULAR
 			markup = generate_markup(chats[message.chat.id][1])	
+			chats[message.chat.id].append(markup)
 			bot.send_message(message.chat.id, 
 				'poll:\n{}'.format(chats[message.chat.id][2]), reply_markup=markup)
 		else:
 			chats[message.chat.id][1][message.text] = 0
 			bot.send_message(message.chat.id, 'another ans accepted')
-	elif __state__ == config.states.S_VOTING:
-		keyboard_hider = telebot.types.ReplyKeyboardRemove()
-		chats[message.chat.id][1][message.text] += 1
-		bot.send_message(message.chat.id, chats[message.chat.id][1].__repr__, reply_markup=keyboard_hider)
 	elif __state__ == config.states.S_REGULAR:		
 		bot.send_message(message.chat.id, message.text) 
+
+
 
 def poll_text_generator(chat_id):
 	poll = chats[chat_id][1]
@@ -63,7 +70,7 @@ def callback_inline(call):
 		ans = call.data
 		chats[call.message.chat.id][1][ans] += 1
 		bot.edit_message_text(chat_id=call.message.chat.id, 
-			message_id=call.message.message_id, text=poll_text_generator(call.message.chat.id))
+			message_id=call.message.message_id, text=poll_text_generator(call.message.chat.id), reply_markup=chats[call.message.chat.id][3])
 
 
 if __name__ == '__main__':
