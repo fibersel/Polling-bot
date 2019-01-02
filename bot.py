@@ -1,10 +1,23 @@
+from aiohttp import web
 import telebot 
 import config
+import os
+import json
+
+
+port = int(os.environ.get('PORT', 443)) 
+
+WEBHOOK_PORT = 443
+
+
+
+
 
 
 bot = telebot.TeleBot(config.token)
 
 chats = {}
+
 
 
 
@@ -52,7 +65,7 @@ def repeat_1(message):
 			chats[message.chat.id][1][message.text] = 0
 			bot.send_message(message.chat.id, 'another ans accepted')
 	elif __state__ == config.states.S_REGULAR:		
-		bot.send_message(message.chat.id, message.text) 
+		print("echo: {}".format(message.text)) 
 
 
 
@@ -84,8 +97,25 @@ def callback_inline(call):
 				message_id=call.message.message_id, text=poll_text_generator(call.message.chat.id), reply_markup=chats[call.message.chat.id][3])
 
 
-if __name__ == '__main__':
-	try:
-		bot.polling(none_stop=True)
-	except KeyboardInterrupt:
-		exit()
+
+bot.remove_webhook()
+	
+bot.set_webhook(url='https://mysterious-oasis-83527.herokuapp.com/603993462:AAFIciJWgaUhHnOk0eVnwTh8M6ndAAiJeQY')
+
+
+
+
+async def handle(request):
+	print('REQUEST CAME')
+	data = await request.json()
+	json_string = json.dumps(data)
+	print(json_string)	
+	update = telebot.types.Update.de_json(json_string)
+	bot.process_new_updates([update])
+	return web.Response(text='')
+
+print('/{}/'.format(config.token))
+
+app = web.Application()
+app.router.add_post('/{}'.format(config.token), handle)
+web.run_app(app,  port=port)
