@@ -1,5 +1,5 @@
 from enum import Enum
-token = '603993462:AAFIciJWgaUhHnOk0eVnwTh8M6ndAAiJeQY'
+token = 'TOKEN'
 
 
 
